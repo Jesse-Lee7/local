@@ -5,6 +5,8 @@
 #include "nifti1_io.h"
 
 
+
+
 void nii2v3draw(QString Qfileinput, unsigned char* &img, long long *&sz_img, int &datatype)
 {
 	string fileinput = std::string((const char*)Qfileinput.toLocal8Bit().constData());
@@ -69,7 +71,7 @@ void v3draw2nii(string Qfileoutput, unsigned char *img, long long *sz_img, int t
 }
 
 
-bool l_loadImage(QString Qfileinput, unsigned char* &img, long long *&sz, int &datatype, int pad_x1, int pad_y1, int pad_z1)
+bool l_loadImage(QString Qfileinput, unsigned char* &img,  long long *&sz, int &datatype, int pad_x1, int pad_y1, int pad_z1)
 {
 	if (pad_x1 == 0 && pad_y1 == 0 && pad_z1 == 0)
 	{
@@ -108,34 +110,34 @@ bool l_loadImage(QString Qfileinput, unsigned char* &img, long long *&sz, int &d
 
 		if (img_or) 			{ delete[]img_or;			img_or = 0; }
 	}
-
+	
 
 	/*if (invert)
 	{
-	image_float32 = new float[sz[0] * sz[1] * sz[2]]();
-	if (datatype == 1)
-	{
-	for (int i = 0; i < sz[0] * sz[1] * sz[2]; i++)
-	{
-	image_float32[i] = img[i];
-	}
-	}
-	else if (datatype == 2)
-	{
-	uint16 *img_u16 = (uint16 *)img;
-	for (int i = 0; i < sz[0] * sz[1] * sz[2]; i++)
-	{
-	image_float32[i] = img_u16[i];
-	}
-	}
-	else if (datatype == 4)
-	{
-	float *img_f32 = (float *)img;
-	for (int i = 0; i < sz[0] * sz[1] * sz[2]; i++)
-	{
-	image_float32[i] = img_f32[i];
-	}
-	}
+		image_float32 = new float[sz[0] * sz[1] * sz[2]]();
+		if (datatype == 1)
+		{
+			for (int i = 0; i < sz[0] * sz[1] * sz[2]; i++)
+			{
+				image_float32[i] = img[i];
+			}
+		}
+		else if (datatype == 2)
+		{
+			uint16 *img_u16 = (uint16 *)img;
+			for (int i = 0; i < sz[0] * sz[1] * sz[2]; i++)
+			{
+				image_float32[i] = img_u16[i];
+			}
+		}
+		else if (datatype == 4)
+		{
+			float *img_f32 = (float *)img;
+			for (int i = 0; i < sz[0] * sz[1] * sz[2]; i++)
+			{
+				image_float32[i] = img_f32[i];
+			}
+		}
 
 	}*/
 
@@ -226,6 +228,7 @@ bool del_pad(unsigned char* input_image, unsigned char * &out_image, long long *
 
 }
 
+
 bool load_density_map(QString qs_filename_img_sub_seg,  map <int, float *> & density_map_sub)
 {
 	
@@ -243,7 +246,7 @@ bool load_density_map(QString qs_filename_img_sub_seg,  map <int, float *> & den
 		int datatype_map = 0;
 		if (!map_file_path.isNull())
 		{
-			if (!l_loadImage((char *)qPrintable(map_file_path), p_img_map, sz_img_map, datatype_map))
+			if (!l_loadImage((char *)qPrintable(map_file_path), p_img_map, sz_img_map, datatype_map,0,0,0))
 			{
 				printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(map_file_path));
 				return false;
@@ -263,7 +266,7 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 {
 	QString qs_filename_img_tar, qs_filename_img_label;
 	
-	unsigned char *p_img_tar = 0,  *p_img_sub_label = 0 ;
+	unsigned char *p_img_tar = 0, *p_img_sub_label = 0, *p_img_sub_label_or=0;
 	long long *sz_img_tar = 0, *sz_img_sub = 0, *sz_img_label = 0;
 	int datatype_tar, datatype_sub, datatype_label;
 
@@ -272,7 +275,7 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 
 	if (!qs_filename_img_sub.isNull())
 	{
-		if (!l_loadImage((char *)qPrintable(qs_filename_img_sub), p_img_sub, sz_img_sub, datatype_sub))
+		if (!l_loadImage((char *)qPrintable(qs_filename_img_sub), p_img_sub, sz_img_sub, datatype_sub,0,0,0))
 		{
 			printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_sub));
 			return false;
@@ -286,24 +289,28 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 			return false;
 		}
 	}
+
 	if (input_Parameter.Select_modal < 2)
 	{
 
 		if (g_flag == 1 || g_flag == 2){ qs_filename_img_tar = data_file + "atlas_NIFTI" + "/CCF_u8_xpad.nii.gz"; }
-		if (g_flag == 3){ qs_filename_img_tar = data_file + "atlas_v3draw" + "/CCF_u8_xpad.v3draw"; }		
+		if (g_flag == 3){ qs_filename_img_tar = data_file + "/atlas_v3draw" + "/CCF_u8_xpad.v3draw"; }
+	
 		if (g_flag == 1 || g_flag == 2){ qs_filename_img_label = data_file + "atlas_NIFTI" + "/CCF_roi.nii.gz"; }
-		if (g_flag == 3){ qs_filename_img_label = data_file + "atlas_v3draw" + "/CCF_roi.v3draw"; }
+		if (g_flag == 3){ qs_filename_img_label = data_file + "/atlas_v3draw" + "/CCF_roi.v3draw"; }
 		
 		if (!qs_filename_img_label.isNull())
 		{
-			if (!l_loadImage((char *)qPrintable(qs_filename_img_label), p_img_sub_label, sz_img_label, datatype_label))
+			if (!l_loadImage((char *)qPrintable(qs_filename_img_label), p_img_sub_label_or, sz_img_label, datatype_label, 0, 0, 0))
 			{
 				printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_label));
 				return false;
 			}
-			padsz = (sz_img_sub[0] - sz_img_label[0]) / 2;
-			p_img_sub_label = pad(p_img_sub_label, padsz);
-			sz_img_label[0] = sz_img_label[0] + padsz * 2;
+			pad_x = (sz_img_sub[0] - sz_img_label[0]) / 2;
+			pad_y = (sz_img_sub[1] - sz_img_label[1]) / 2;
+			pad_z = (sz_img_sub[2] - sz_img_label[2]) / 2;
+
+			pad(p_img_sub_label_or, sz_img_label, p_img_sub_label, pad_x, pad_y, pad_z);
 
 			printf("\t>>read label image file [%s] complete.\n", qPrintable(qs_filename_img_label));
 			printf("\t\timage size: [w=%ld, h=%ld, z=%ld, c=%ld]\n", sz_img_label[0], sz_img_label[1], sz_img_label[2], sz_img_label[3]);
@@ -320,15 +327,13 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 	{
 		qs_filename_img_tar = data_file + "/Target_image.v3draw";
 	}
-
 	if (!qs_filename_img_tar.isNull())
 	{
-		if (!l_loadImage((char *)qPrintable(qs_filename_img_tar), p_img_tar, sz_img_tar, datatype_tar))
+		if (!l_loadImage((char *)qPrintable(qs_filename_img_tar), p_img_tar, sz_img_tar, datatype_tar, pad_x, pad_y, pad_z))
 		{
 			printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_tar));
 			return false;
 		}
-		p_img_tar = pad(p_img_tar, padsz); sz_img_tar[0] = sz_img_tar[0] + padsz * 2;
 		printf("\t>>read tar image file [%s] complete.\n", qPrintable(qs_filename_img_tar));
 		printf("\t\timage size: [w=%ld, h=%ld, z=%ld, c=%ld]\n", sz_img_tar[0], sz_img_tar[1], sz_img_tar[2], sz_img_tar[3]);
 		printf("\t\tdatatype: %d\n", datatype_tar);
@@ -337,7 +342,9 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 			printf("ERROR: Input image datatype is not UINT8.\n");
 			return false;
 		}
-	}	
+	}
+
+	
 	if (sz_img_tar[0] != sz_img_sub[0] || sz_img_tar[1] != sz_img_sub[1] || sz_img_tar[2] != sz_img_sub[2] || sz_img_tar[3] != 1 || sz_img_sub[3] != 1)
 	{
 		printf("ERROR: Input images have different size or channel > 1.\n");
@@ -347,6 +354,7 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 	{
 		sz_img = sz_img_tar;
 	}
+
 	long long l_npixels = sz_img_tar[0] * sz_img_tar[1] * sz_img_tar[2];
 
 	//-----------------------------------------------------------------------------------------
@@ -396,6 +404,10 @@ bool loadImageData(Parameter input_Parameter,QString data_file, QString qs_filen
 	return true;
 }
 
+
+
+//‘ÿ»Îµ„
+
 bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine_sub_corner, vector<point3D64F> &aver_corner, vector<int> &label, QString data_file,
 	QString fine_filename, long long *sz_img, Parameter &input_Parameter, float  **** p_img_label_4d,
 	QString qs_filename_img_sub_seg, map <int, float *> & density_map_sub,float*& fmost_label_edge , float  ****&fmost_label_edge_4d)
@@ -417,7 +429,7 @@ bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine
 			point3D64F tmp;
 			for (long long i = 0; i < ql_marker_tar.size(); i++)
 			{
-				tmp.x = ql_marker_tar[i].x + padsz; tmp.y = ql_marker_tar[i].y; tmp.z = ql_marker_tar[i].z;
+				tmp.x = ql_marker_tar[i].x + pad_x; tmp.y = ql_marker_tar[i].y+pad_y; tmp.z = ql_marker_tar[i].z+pad_z;
 				vec_corners.push_back(tmp);
 			}
 		}
@@ -426,19 +438,22 @@ bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine
 	// Determine whether the landmarks belongs to the contour, so that the internal landmarks and the external landmarks can be registered separately.
 	if (input_Parameter.Select_modal < 2)
 	{
-		if (g_flag == 1 || g_flag == 2){  ccf_edge_file = data_file + "atlas_NIFTI" + "/CCF_contour.nii.gz"; }
-		if (g_flag == 3){  ccf_edge_file = data_file + "atlas_v3draw" + "/CCF_contour.v3draw"; }
+		//QString ccf_edge_file = data_file + "/CCF_contour.nii";
+		//QString ccf_edge_file = data_file;
+		if (g_flag == 1 || g_flag == 2){  ccf_edge_file = data_file + "/atlas_NIFTI/CCF_contour.nii.gz"; }
+		if (g_flag == 3){  ccf_edge_file = data_file + "/atlas_v3draw/CCF_contour.v3draw"; }
+		//QString ccf_edge_file = data_file + "/CCF_contour.nii";
 		unsigned char   *ccf_edge = 0;
 		long long *sz_img_ccf_edge = 0;
 		int datatype_ccf_edge;
+
 		if (!ccf_edge_file.isNull())
 		{
-			if (!l_loadImage((char *)qPrintable(ccf_edge_file), ccf_edge, sz_img_ccf_edge, datatype_ccf_edge))
+			if (!l_loadImage((char *)qPrintable(ccf_edge_file), ccf_edge, sz_img_ccf_edge, datatype_ccf_edge, pad_x, pad_y, pad_z))
 			{
 				printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(ccf_edge_file));
 				return false;
 			}
-			ccf_edge = pad(ccf_edge, padsz); sz_img_ccf_edge[0] = sz_img_ccf_edge[0] + padsz * 2;
 
 			printf("\t>>read ccf edge image file [%s] complete.\n", qPrintable(ccf_edge_file));
 			printf("\t\timage size: [w=%ld, h=%ld, z=%ld, c=%ld]\n", sz_img_ccf_edge[0], sz_img_ccf_edge[1], sz_img_ccf_edge[2], sz_img_ccf_edge[3]);
@@ -504,8 +519,8 @@ bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine
 				for (long long i = 0; i < average_tar_file.size(); i++)
 				{
 					point3D64F i_tmp;
-					i_tmp.x = average_tar_file[i].x + padsz; i_tmp.y = average_tar_file[i].y; i_tmp.z = average_tar_file[i].z; i_tmp.label = average_tar_file[i].color.b; average_tar.push_back(i_tmp);
-					i_tmp.x = average_sub_file[i].x + padsz; i_tmp.y = average_sub_file[i].y; i_tmp.z = average_sub_file[i].z; i_tmp.label = average_tar_file[i].color.b; average_sub.push_back(i_tmp);
+					i_tmp.x = average_tar_file[i].x + pad_x; i_tmp.y = average_tar_file[i].y+pad_y; i_tmp.z = average_tar_file[i].z+pad_z; i_tmp.label = average_tar_file[i].color.b; average_tar.push_back(i_tmp);
+					i_tmp.x = average_sub_file[i].x + pad_x; i_tmp.y = average_sub_file[i].y+pad_y; i_tmp.z = average_sub_file[i].z+pad_z; i_tmp.label = average_tar_file[i].color.b; average_sub.push_back(i_tmp);
 				}
 				float lam = 0.5;
 				clock_t auto_update_time;
@@ -515,7 +530,8 @@ bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine
 				
 				clock_t auto_time;
 				auto_time = clock();
-			    auto_warp_marker(lam, average_tar, average_sub, aver_corner);
+				if (input_Parameter.GPU_acceleration==0)auto_warp_marker(lam, average_tar, average_sub, aver_corner);
+				if (input_Parameter.GPU_acceleration == 1)auto_warp_marker_gpu(lam, average_tar, average_sub, aver_corner);
 				printf("\t>>auto_time consume %.2f s\n", (float)(clock() - auto_time) / CLOCKS_PER_SEC);
 				fine_sub_corner = aver_corner;
 			
@@ -562,6 +578,12 @@ bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine
 			{
 				printf("2-3 run fMOST brain without subject density map \n");
 			}
+	//		if (!load_density_map(qs_filename_img_sub_seg, density_map_sub))
+	////		{
+	//			printf("ERROE:load_density_map()!!!! \n");
+	//			return true;
+	//		}
+		
 		}
 		else
 		{
@@ -573,16 +595,21 @@ bool LoadLandmarksData(vector<point3D64F> &vec_corners, vector<point3D64F> &fine
 		sort(vec_corners.begin(), vec_corners.end(), compare_label);
 		sort(fine_sub_corner.begin(), fine_sub_corner.end(), compare_label);
 		sort(aver_corner.begin(), aver_corner.end(), compare_label);
+
+
+
 	}
 	else if (input_Parameter.Select_modal == 2)
 	{
 		/*printf("Registration modal: Zebra fish registration");*/
 		aver_corner = vec_corners;
-	}	
+	}
+	
 }
 
 bool outline_detec(float *& p_img_input, long long *& sz_img_input, float *& img_edge)
 {
+
 	long l_npixels = sz_img_input[0] * sz_img_input[1] * sz_img_input[2] * sz_img_input[3];
 	for (long i = 0; i < l_npixels; i++)
 		img_edge[i] = 0.0;
@@ -600,7 +627,7 @@ bool outline_detec(float *& p_img_input, long long *& sz_img_input, float *& img
 					{
 						for (cx = x - 2; cx < x + 2; ++cx)
 						{
-							if (cx < 0 || cx > sz_img_input[0] - 1 || cy < 0 || cy > sz_img_input[1] - 1 || cz < 0 || cz > sz_img_input[2] - 1)
+							if (cx < 0 || cx >= sz_img_input[0] - 1 || cy < 0 || cy >= sz_img_input[1] - 1 || cz < 0 || cz >= sz_img_input[2] - 1)
 								continue;
 							//cout << p_img_input[cz * sz_img_input[1] * sz_img_input[0] + cy * sz_img_input[0] + cx] << endl;
 							if (value != (float)p_img_input[cz * sz_img_input[1] * sz_img_input[0] + cy * sz_img_input[0] + cx])
@@ -631,7 +658,7 @@ bool update_sub_corner(QString qs_filename_img_sub_seg, float * &fmost_label, fl
 
 	if (!fmost_label_file.isNull())
 	{
-		if (!l_loadImage((char *)qPrintable(fmost_label_file), fmost_label_char, label_size, datatype_sub))
+		if (!l_loadImage((char *)qPrintable(fmost_label_file), fmost_label_char, label_size, datatype_sub,0,0,0))
 		{
 			printf("ERROR: loadImage() return false in loading [%s].\n", qPrintable(fmost_label_file));
 			return false;
@@ -641,9 +668,9 @@ bool update_sub_corner(QString qs_filename_img_sub_seg, float * &fmost_label, fl
 		printf("\t\tdatatype: %d\n", datatype_sub);
 
 	}
-	fmost_label = (float *)fmost_label_char;
 
-	long long l_npixels = label_size[0]*label_size[1]*label_size[2]*label_size[3];
+	fmost_label = (float *)fmost_label_char;
+    long long l_npixels = label_size[0]*label_size[1]*label_size[2]*label_size[3];
 
 	float * fmost_label_edge = 0;
 
@@ -794,8 +821,11 @@ bool update_sub_corner(QString qs_filename_img_sub_seg, float * &fmost_label, fl
 			{
 					dis = dis - 10;
 			}
+
 		}
+
 	}
+
 	vector<point3D64F> warp_corner = fine_sub_corner_raw;
 	at_lam =100;
 	auto_warp_marker(at_lam, fine_sub_corner_raw, fine_sub_corner, warp_corner);

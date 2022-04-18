@@ -1,2 +1,4 @@
 # local
-cpu gpu
+main cpu
+new gpu0
+new1 gpu1
